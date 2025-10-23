@@ -1,13 +1,34 @@
+import { useState } from 'react';
 import { PrioritySummaryCard } from '@/components/PrioritySummaryCard';
 import { PrioritySection } from '@/components/PrioritySection';
-import { mockProjects } from '@/data/mockProjects';
-import { Priority } from '@/types/project';
+import { ProjectFilters } from '@/components/ProjectFilters';
+import { HighlightedProjects } from '@/components/HighlightedProjects';
+import { ProjectFormDialog } from '@/components/ProjectFormDialog';
+import { mockProjects as initialProjects } from '@/data/mockProjects';
+import { Project } from '@/types/project';
 import { LayoutDashboard } from 'lucide-react';
+import { filterProjects, getUniqueSectors, FilterState } from '@/utils/projectUtils';
+import { Toaster } from 'sonner';
 
 const Index = () => {
-  const criticalProjects = mockProjects.filter(p => p.priority === 'critical');
-  const mediumProjects = mockProjects.filter(p => p.priority === 'medium');
-  const lowProjects = mockProjects.filter(p => p.priority === 'low');
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [filters, setFilters] = useState<FilterState>({
+    searchText: '',
+    priority: 'all',
+    status: 'all',
+    sector: 'all',
+    deadline: 'all'
+  });
+
+  const filteredProjects = filterProjects(projects, filters);
+  const criticalProjects = filteredProjects.filter(p => p.priority === 'critical');
+  const mediumProjects = filteredProjects.filter(p => p.priority === 'medium');
+  const lowProjects = filteredProjects.filter(p => p.priority === 'low');
+  const sectors = getUniqueSectors(projects);
+
+  const handleProjectCreate = (newProject: Project) => {
+    setProjects([newProject, ...projects]);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,6 +46,14 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
+        {/* Filters */}
+        <ProjectFilters 
+          filters={filters}
+          onFilterChange={setFilters}
+          sectors={sectors}
+          resultsCount={filteredProjects.length}
+        />
+
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <PrioritySummaryCard 
@@ -44,10 +73,13 @@ const Index = () => {
           />
           <PrioritySummaryCard 
             priority="total" 
-            count={mockProjects.length} 
+            count={filteredProjects.length} 
             label="Total" 
           />
         </div>
+
+        {/* Highlighted Projects */}
+        <HighlightedProjects projects={filteredProjects} />
 
         {/* Priority Sections */}
         <div className="space-y-8">
@@ -65,6 +97,15 @@ const Index = () => {
           />
         </div>
       </main>
+
+      {/* Create Project FAB */}
+      <ProjectFormDialog 
+        onProjectCreate={handleProjectCreate}
+        existingSectors={sectors}
+      />
+
+      {/* Toast notifications */}
+      <Toaster position="top-right" />
     </div>
   );
 };
