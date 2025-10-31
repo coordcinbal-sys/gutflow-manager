@@ -27,10 +27,11 @@ type ProjectFormData = z.infer<typeof projectSchema>;
 interface ProjectFormDialogProps {
   onProjectCreate: (project: Project) => void;
   existingSectors: string[];
+  onClose?: () => void;
 }
 
-export const ProjectFormDialog = ({ onProjectCreate, existingSectors }: ProjectFormDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const ProjectFormDialog = ({ onProjectCreate, existingSectors, onClose }: ProjectFormDialogProps) => {
+  const [open, setOpen] = useState(true);
   const [customSector, setCustomSector] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<ProjectFormData>({
@@ -61,20 +62,19 @@ export const ProjectFormDialog = ({ onProjectCreate, existingSectors }: ProjectF
     reset();
     setCustomSector(false);
     setOpen(false);
+    onClose?.();
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      onClose?.();
+    }
   };
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button 
-            size="lg"
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-50"
-          >
-            <Plus className="w-6 h-6" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Criar Novo Projeto</DialogTitle>
             <DialogDescription>
@@ -226,7 +226,7 @@ export const ProjectFormDialog = ({ onProjectCreate, existingSectors }: ProjectF
             )}
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancelar
               </Button>
               <Button type="submit">Criar Projeto</Button>
@@ -234,6 +234,5 @@ export const ProjectFormDialog = ({ onProjectCreate, existingSectors }: ProjectF
           </form>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    );
 };

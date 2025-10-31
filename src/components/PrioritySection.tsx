@@ -5,6 +5,7 @@ import { AlertCircle } from 'lucide-react';
 interface PrioritySectionProps {
   priority: Priority;
   projects: Project[];
+  onProjectClick?: (project: Project) => void;
 }
 
 const priorityStyles = {
@@ -25,7 +26,7 @@ const priorityStyles = {
   }
 };
 
-export const PrioritySection = ({ priority, projects }: PrioritySectionProps) => {
+export const PrioritySection = ({ priority, projects, onProjectClick }: PrioritySectionProps) => {
   const style = priorityStyles[priority];
   const Icon = style.icon;
 
@@ -39,7 +40,11 @@ export const PrioritySection = ({ priority, projects }: PrioritySectionProps) =>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard 
+            key={project.id} 
+            project={project} 
+            onClick={() => onProjectClick?.(project)}
+          />
         ))}
       </div>
     </div>

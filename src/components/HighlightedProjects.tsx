@@ -5,9 +5,10 @@ import { isProjectUpcoming } from '@/utils/projectUtils';
 
 interface HighlightedProjectsProps {
   projects: Project[];
+  onProjectClick?: (project: Project) => void;
 }
 
-export const HighlightedProjects = ({ projects }: HighlightedProjectsProps) => {
+export const HighlightedProjects = ({ projects, onProjectClick }: HighlightedProjectsProps) => {
   const inProgressProjects = projects
     .filter(p => p.status === 'in-progress')
     .slice(0, 4);
@@ -43,9 +44,14 @@ export const HighlightedProjects = ({ projects }: HighlightedProjectsProps) => {
               </h3>
             </div>
             <div className="space-y-3">
-              {inProgressProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} highlighted />
-              ))}
+          {inProgressProjects.map((project) => (
+            <ProjectCard 
+              key={project.id} 
+              project={project} 
+              highlighted 
+              onClick={() => onProjectClick?.(project)}
+            />
+          ))}
             </div>
           </div>
         )}
@@ -60,9 +66,14 @@ export const HighlightedProjects = ({ projects }: HighlightedProjectsProps) => {
               </h3>
             </div>
             <div className="space-y-3">
-              {upcomingProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} highlighted />
-              ))}
+          {upcomingProjects.map((project) => (
+            <ProjectCard 
+              key={project.id} 
+              project={project} 
+              highlighted 
+              onClick={() => onProjectClick?.(project)}
+            />
+          ))}
             </div>
           </div>
         )}

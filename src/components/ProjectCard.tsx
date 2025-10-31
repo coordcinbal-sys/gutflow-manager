@@ -3,11 +3,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Calendar, Briefcase, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
 import { Project, statusLabels } from '@/types/project';
-import { isProjectUrgent, isProjectUpcoming } from '@/utils/projectUtils';
+import { isProjectUrgent, isProjectUpcoming, isProjectOverdue } from '@/utils/statusCalculator';
+import { formatDateForDisplay, formatDaysRemaining, getDaysUntil } from '@/utils/dateUtils';
 
 interface ProjectCardProps {
   project: Project;
   highlighted?: boolean;
+  onClick?: () => void;
 }
 
 const statusStyles = {
@@ -17,16 +19,18 @@ const statusStyles = {
   'completed': 'bg-low text-low-foreground'
 };
 
-export const ProjectCard = ({ project, highlighted = false }: ProjectCardProps) => {
+export const ProjectCard = ({ project, highlighted = false, onClick }: ProjectCardProps) => {
   const isUrgent = isProjectUrgent(project);
   const isUpcoming = isProjectUpcoming(project);
+  const isOverdue = isProjectOverdue(project);
+  const daysRemaining = getDaysUntil(project.endDate);
   
   const cardClasses = highlighted 
-    ? "p-4 transition-all hover:shadow-lg border-l-4 border-l-medium shadow-md ring-2 ring-medium/20" 
-    : "p-4 transition-all hover:shadow-md border-l-4 border-l-primary";
+    ? "p-4 transition-all hover:shadow-lg border-l-4 border-l-medium shadow-md ring-2 ring-medium/20 cursor-pointer" 
+    : "p-4 transition-all hover:shadow-md border-l-4 border-l-primary cursor-pointer";
 
   return (
-    <Card className={cardClasses}>
+    <Card className={cardClasses} onClick={onClick}>
       <div className="space-y-3">
         <div>
           <div className="flex items-start justify-between gap-2">
@@ -50,15 +54,30 @@ export const ProjectCard = ({ project, highlighted = false }: ProjectCardProps) 
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <Calendar className="w-4 h-4 text-muted-foreground" />
-          <span className="text-muted-foreground">{project.endDate}</span>
-          {isUrgent && (
-            <Badge variant="destructive" className="text-xs flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" />
-              Urgente
-            </Badge>
-          )}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground text-xs">
+              {formatDateForDisplay(project.startDate)} - {formatDateForDisplay(project.endDate)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <Clock className="w-3 h-3 text-muted-foreground" />
+            <span className={isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}>
+              {formatDaysRemaining(daysRemaining)}
+            </span>
+            {isUrgent && !isOverdue && (
+              <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                Urgente
+              </Badge>
+            )}
+            {isOverdue && (
+              <Badge variant="destructive" className="text-xs">
+                ATRASADO
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-between">
